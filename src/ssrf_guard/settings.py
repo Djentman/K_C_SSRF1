@@ -1,0 +1,1 @@
+ALLOWED_SSRF_HOSTS = []
