@@ -1,3 +1,5 @@
+# src/ssrf_guard/validator.py
+
 from urllib.parse import urlparse
 from socket import error as socket_error
 import ipaddress
@@ -36,7 +38,8 @@ def validate_no_ssrf(url):
     except socket_error:
         raise ValidationError("DNS resolution failed")
 
-    return None
+    # Если дошли досюда — значит хост не в списке разрешённых
+    raise ValidationError(f"Host not allowed: {host}")
 
 
 def host_to_ip(host):

@@ -1,3 +1,5 @@
+# tests/test_validator.py
+
 import pytest
 from unittest import mock
 from socket import error as socket_error
@@ -8,7 +10,7 @@ from ssrf_guard.validator import validate_no_ssrf, ValidationError
 
 # Вспомогательная функция для мока gethostbyname
 def mock_gethostbyname(host):
-    if host == "good.com":
+    if host in ["good.com", "k-c-twa-front.dev.cleverbots.ru"]:
         return "93.184.216.34"
     elif host == "example.com":
         return "93.184.216.34"
@@ -25,11 +27,20 @@ def mock_gethostbyname(host):
 # Мокаем наши настройки
 @pytest.fixture(autouse=True)
 def mock_allowed_hosts():
-    with mock.patch('ssrf_guard.settings.ALLOWED_SSRF_HOSTS', ['example.com']):
+    with mock.patch('ssrf_guard.settings.ALLOWED_SSRF_HOSTS', [
+        "k-c-twa-front.dev.cleverbots.ru",
+        "k-c-twa-front.test.cleverbots.ru",
+        "kctwa-front.preprod.momhugs.huggies.ru",
+        "kctwa-front.preprod.momhugs.huggies.uz",
+        "kctwa-front.preprod.momhugs.huggies.kz",
+        "kctwa-front.momhugs.huggies.ru",
+        "kctwa-front.momhugs.huggies.uz",
+        "kctwa-front.momhugs.huggies.kz"
+    ]):
         yield
 
 
-# Утилиты
+# Утилита вызова
 def call_validate(url):
     return validate_no_ssrf(url)
 
@@ -38,7 +49,7 @@ def call_validate(url):
 class TestValidateNoSSRF:
 
     def test_valid_url_allowed_host(self, _):
-        assert call_validate("https://example.com ") is None
+        assert call_validate("https://k-c-twa-front.dev.cleverbots.ru ") is None
 
     def test_valid_url_non_allowed_host(self, _):
         with pytest.raises(ValidationError):
